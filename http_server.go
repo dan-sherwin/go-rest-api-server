@@ -51,6 +51,24 @@ func StartHttpServer() {
 	}()
 }
 
+// StartHttpTLSServer initializes and starts an HTTPS server with TLS using the provided certificate and key files.
+// It listens on the globally defined ListeningAddress and handles HTTP routes through the configured httpApp router.
+// The server runs asynchronously and logs relevant startup and error messages.
+func StartHttpTLSServer(certFile, keyFile string) {
+	slog.Info(fmt.Sprintf("starting tls http service on http://%s", ListeningAddress))
+	setupRoutes()
+	httpServer = &http.Server{Addr: ListeningAddress, Handler: httpApp.Handler()}
+	go func() {
+		slog.Info("listening and serving TLS HTTP on " + ListeningAddress)
+		if err := httpServer.ListenAndServeTLS(certFile, keyFile); err != nil {
+			if err.Error() != "http: Server closed" {
+				slog.Error("error occurred while setting up the server. " + err.Error())
+				os.Exit(1)
+			}
+		}
+	}()
+}
+
 // DisablePing sets the internal `disablePing` variable to true, effectively disabling the ping functionality.
 func DisablePing() {
 	disablePing = true
