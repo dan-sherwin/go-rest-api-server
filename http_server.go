@@ -30,7 +30,7 @@ func init() {
 	httpApp = gin.New()
 	httpApp.Use(gin.Recovery())
 	_ = httpApp.SetTrustedProxies(nil)
-	httpApp.Use(middlewares.CORSMiddleware(), middlewares.GenRequestID(), middlewares.RequestLogger(), middlewares.NoCache())
+	httpApp.Use(gin.Recovery(), middlewares.CORSMiddleware(), middlewares.RequestLogger(), middlewares.NoCache())
 }
 
 // StartHttpServer initializes and starts an HTTP server at the specified listening address.
