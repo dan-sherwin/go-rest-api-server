@@ -113,8 +113,3 @@ func ClientIP(c *gin.Context) string {
 	}
 	return c.ClientIP()
 }
-
-// RequestID extracts the "X-Spacelink-Request-Id" header value from the provided gin.Context and returns it as a string.
-func RequestID(c *gin.Context) string {
-	return c.GetHeader("X-Spacelink-Request-Id")
-}
