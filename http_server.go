@@ -55,7 +55,7 @@ func init() {
 // Runs the server in a separate goroutine to allow non-blocking operation.
 func StartHttpServer() {
 	slog.Info(fmt.Sprintf("starting service on http://%s", ListeningAddress))
-	setupRoutes()
+	once.Do(setupRoutes)
 	httpServer = &http.Server{Addr: ListeningAddress, Handler: httpApp.Handler()}
 	go func() {
 		slog.Info("listening and serving HTTP on " + ListeningAddress)
@@ -73,7 +73,7 @@ func StartHttpServer() {
 // The server runs asynchronously and logs relevant startup and error messages.
 func StartHttpsServer(certFile, keyFile string, autoSelfSigned bool) {
 	slog.Info(fmt.Sprintf("starting tls http service on http://%s", ListeningAddress))
-	setupRoutes()
+	once.Do(setupRoutes)
 
 	var err error
 	certPath := certFile
