@@ -1,4 +1,4 @@
-package rest_api_server
+package go_rest_api_server
 
 import (
 	"context"
