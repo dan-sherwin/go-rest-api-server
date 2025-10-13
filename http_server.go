@@ -69,10 +69,10 @@ func StartHttpServer() {
 }
 
 // StartHttpsServer initializes and starts an HTTPS server with TLS using the provided certificate and key files.
-// It listens on the globally defined ListeningAddress and handles HTTP routes through the configured httpApp router.
+// It listens on the globally defined HTTPSListeningAddress and handles HTTP routes through the configured httpApp router.
 // The server runs asynchronously and logs relevant startup and error messages.
 func StartHttpsServer(certFile, keyFile string, autoSelfSigned bool) {
-	slog.Info(fmt.Sprintf("starting tls http service on http://%s", ListeningAddress))
+	slog.Info(fmt.Sprintf("starting tls http service on http://%s", HTTPSListeningAddress))
 	once.Do(setupRoutes)
 
 	var err error
