@@ -1,4 +1,4 @@
-package rest_response
+package restresponse
 
 import (
 	"net/http"

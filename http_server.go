@@ -1,4 +1,4 @@
-package go_rest_api_server
+package restapi
 
 import (
 	"context"
