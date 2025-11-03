@@ -1,5 +1,10 @@
 # Go Rest API Server
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/dan-sherwin/go-rest-api-server.svg)](https://pkg.go.dev/github.com/dan-sherwin/go-rest-api-server)
+[![Go Report Card](https://goreportcard.com/badge/github.com/dan-sherwin/go-rest-api-server)](https://goreportcard.com/report/github.com/dan-sherwin/go-rest-api-server)
+[![Release](https://img.shields.io/github/v/release/dan-sherwin/go-rest-api-server?sort=semver)](https://github.com/dan-sherwin/go-rest-api-server/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 A lightweight helper package for building HTTP/HTTPS services with [Gin](https://github.com/gin-gonic/gin). It provides sensible defaults, production‑friendly middleware, convenient response helpers, and support for listening on multiple interfaces and/or ports. It preserves backward compatibility with legacy single‑address APIs.
 
 - Multi‑address listeners for HTTP and HTTPS
