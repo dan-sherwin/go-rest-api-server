@@ -2,10 +2,7 @@ module github.com/dan-sherwin/go-rest-api-server
 
 go 1.24.6
 
-require (
-	github.com/gin-gonic/gin v1.10.1
-	github.com/google/uuid v1.6.0
-)
+require github.com/gin-gonic/gin v1.10.1
 
 require (
 	github.com/bytedance/sonic v1.14.0 // indirect
