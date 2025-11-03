@@ -1,3 +1,4 @@
+// Package middlewares contains Gin HTTP middlewares used by the restapi server (CORS, logging, no-cache).
 package middlewares
 
 import (

@@ -1,6 +1,6 @@
 module github.com/dan-sherwin/go-rest-api-server
 
-go 1.24.6
+go 1.25.3
 
 require github.com/gin-gonic/gin v1.10.1
 

@@ -1,3 +1,4 @@
+// Package restresponse defines response codes and helpers for consistent JSON API responses.
 package restresponse
 
 import (
@@ -5,6 +6,7 @@ import (
 	"strconv"
 )
 
+// Code represents an application-level response code used to map to HTTP status codes and string labels.
 type Code uint32
 
 const (
@@ -63,44 +65,21 @@ const (
 	// Unauthenticated indicates the request does not have valid authentication credentials.
 	Unauthenticated
 
-	// Additional HTTP-aligned codes for REST error responses.
-	BadRequest           // 400 Bad Request
-	UnsupportedMediaType // 415 Unsupported Media Type
-	NotAcceptable        // 406 Not Acceptable
-	PayloadTooLarge      // 413 Payload Too Large
-	TooManyRequests      // 429 Too Many Requests
-	UnprocessableContent // 422 Unprocessable Content
-
-	_maxCode
+	// BadRequest maps to HTTP 400 Bad Request.
+	BadRequest
+	// UnsupportedMediaType maps to HTTP 415 Unsupported Media Type.
+	UnsupportedMediaType
+	// NotAcceptable maps to HTTP 406 Not Acceptable.
+	NotAcceptable
+	// PayloadTooLarge maps to HTTP 413 Payload Too Large.
+	PayloadTooLarge
+	// TooManyRequests maps to HTTP 429 Too Many Requests.
+	TooManyRequests
+	// UnprocessableContent maps to HTTP 422 Unprocessable Content.
+	UnprocessableContent
 )
 
-var strToCode = map[string]Code{
-	`"OK"`:          OK,
-	`"OKNoContent"`: OK,
-	`"CANCELLED"`:/* [sic] */ Canceled,
-	`"UNKNOWN"`:                Unknown,
-	`"INVALID_ARGUMENT"`:       InvalidArgument,
-	`"DEADLINE_EXCEEDED"`:      DeadlineExceeded,
-	`"NOT_FOUND"`:              NotFound,
-	`"ALREADY_EXISTS"`:         AlreadyExists,
-	`"PERMISSION_DENIED"`:      PermissionDenied,
-	`"RESOURCE_EXHAUSTED"`:     ResourceExhausted,
-	`"FAILED_PRECONDITION"`:    FailedPrecondition,
-	`"ABORTED"`:                Aborted,
-	`"OUT_OF_RANGE"`:           OutOfRange,
-	`"UNIMPLEMENTED"`:          Unimplemented,
-	`"INTERNAL"`:               Internal,
-	`"UNAVAILABLE"`:            Unavailable,
-	`"DATA_LOSS"`:              DataLoss,
-	`"UNAUTHENTICATED"`:        Unauthenticated,
-	`"BAD_REQUEST"`:            BadRequest,
-	`"UNSUPPORTED_MEDIA_TYPE"`: UnsupportedMediaType,
-	`"NOT_ACCEPTABLE"`:         NotAcceptable,
-	`"PAYLOAD_TOO_LARGE"`:      PayloadTooLarge,
-	`"TOO_MANY_REQUESTS"`:      TooManyRequests,
-	`"UNPROCESSABLE_CONTENT"`:  UnprocessableContent,
-}
-
+// HTTPStatusFromCode converts a package Code into the corresponding HTTP status code.
 func HTTPStatusFromCode(code Code) int {
 	switch code {
 	case OK:

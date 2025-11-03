@@ -1,3 +1,4 @@
+// Package restapi provides a lightweight HTTP/HTTPS server built on Gin with optional multi-address listening and helper utilities.
 package restapi
 
 import (
@@ -66,6 +67,8 @@ func init() {
 // StartHttpServer initializes and starts one or more HTTP servers at the configured listening addresses.
 // If `ListeningAddresses` is non-empty, a server is started for each address; otherwise, the legacy
 // single `ListeningAddress` is used. Servers run in separate goroutines for non-blocking operation.
+//
+//revive:disable-next-line var-naming
 func StartHttpServer() {
 	// Resolve addresses
 	addrs := ListeningAddresses
@@ -102,6 +105,8 @@ func StartHttpServer() {
 // StartHttpsServer initializes and starts one or more HTTPS servers with TLS using the provided certificate and key files.
 // If `HTTPSListeningAddresses` is non-empty, a server is started for each address; otherwise, the legacy
 // single `HTTPSListeningAddress` is used. Servers run asynchronously and log startup/errors.
+//
+//revive:disable-next-line var-naming
 func StartHttpsServer(certFile, keyFile string, autoSelfSigned bool) {
 	// Resolve addresses
 	addrs := HTTPSListeningAddresses
@@ -173,6 +178,8 @@ func RegisterRouters(registrars ...func(r *gin.Engine)) {
 
 // ShutdownHttpServer gracefully shuts down all running HTTP servers.
 // Returns the first error encountered (if any).
+//
+//revive:disable-next-line var-naming
 func ShutdownHttpServer() error {
 	servers := httpServers
 	// Backward compatibility: if slice is empty but legacy handle exists, use it
@@ -233,6 +240,8 @@ func ClientIP(c *gin.Context) string {
 
 // ShutdownHttpsServer gracefully shuts down all running HTTPS servers and cleans up any generated cert/key files.
 // Returns the first error encountered (if any).
+//
+//revive:disable-next-line var-naming
 func ShutdownHttpsServer() error {
 	servers := httpsServers
 	// Backward compatibility: if slice is empty but legacy handle exists, use it
@@ -359,9 +368,7 @@ func generateSelfSignedCertFiles(certOut, keyOut string) (string, string, error)
 
 	// Add common hostnames and IPs
 	hosts := []string{"localhost"}
-	for _, h := range hosts {
-		template.DNSNames = append(template.DNSNames, h)
-	}
+	template.DNSNames = append(template.DNSNames, hosts...)
 	for _, ipStr := range []string{"127.0.0.1", "::1"} {
 		if ip := net.ParseIP(ipStr); ip != nil {
 			template.IPAddresses = append(template.IPAddresses, ip)

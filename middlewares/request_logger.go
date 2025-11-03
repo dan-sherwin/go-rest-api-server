@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
-	"io/ioutil"
+	"io"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -24,8 +24,8 @@ func RequestLogger() gin.HandlerFunc {
 		} else {
 			var bodyBytes []byte
 			if c.Request.Body != nil {
-				bodyBytes, _ = ioutil.ReadAll(c.Request.Body)
-				c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+				bodyBytes, _ = io.ReadAll(c.Request.Body)
+				c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 			}
 
 			bodyMap := make(map[string]interface{})

@@ -2,6 +2,7 @@ package restresponse
 
 import "github.com/gin-gonic/gin"
 
+// RestSuccess writes a 200 OK JSON response with the provided data payload.
 func RestSuccess(c *gin.Context, data interface{}) {
 	c.Header("Content-Type", "application/json")
 	c.JSON(200, data)

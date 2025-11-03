@@ -64,8 +64,13 @@ func waitForHTTP(url string, timeout time.Duration) error {
 	for time.Now().Before(deadline) {
 		resp, err := client.Get(url)
 		if err == nil {
-			io.Copy(io.Discard, resp.Body)
-			resp.Body.Close()
+			if _, cerr := io.Copy(io.Discard, resp.Body); cerr != nil {
+				_ = resp.Body.Close()
+				return fmt.Errorf("copy body: %v", cerr)
+			}
+			if cerr := resp.Body.Close(); cerr != nil {
+				return fmt.Errorf("close body: %v", cerr)
+			}
 			if resp.StatusCode == 200 {
 				return nil
 			}
@@ -83,8 +88,13 @@ func waitForHTTPS(url string, timeout time.Duration) error {
 	for time.Now().Before(deadline) {
 		resp, err := client.Get(url)
 		if err == nil {
-			io.Copy(io.Discard, resp.Body)
-			resp.Body.Close()
+			if _, cerr := io.Copy(io.Discard, resp.Body); cerr != nil {
+				_ = resp.Body.Close()
+				return fmt.Errorf("copy body: %v", cerr)
+			}
+			if cerr := resp.Body.Close(); cerr != nil {
+				return fmt.Errorf("close body: %v", cerr)
+			}
 			if resp.StatusCode == 200 {
 				return nil
 			}
@@ -114,7 +124,7 @@ func TestHTTPServerSingleAddressPing(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GET /ping failed: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != 200 {
 		t.Fatalf("expected 200, got %d", resp.StatusCode)
 	}
@@ -147,7 +157,9 @@ func TestHTTPServerMultipleAddresses(t *testing.T) {
 		if err != nil {
 			t.Fatalf("GET /ping on %s failed: %v", addr, err)
 		}
-		resp.Body.Close()
+		if err := resp.Body.Close(); err != nil {
+			t.Fatalf("close body on %s: %v", addr, err)
+		}
 		if resp.StatusCode != 200 {
 			t.Fatalf("expected 200 from %s, got %d", addr, resp.StatusCode)
 		}
@@ -195,7 +207,7 @@ func TestHTTPSServerSelfSignedAndCleanup(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GET /ping over TLS failed: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != 200 {
 		t.Fatalf("expected 200, got %d", resp.StatusCode)
 	}
@@ -230,7 +242,7 @@ func TestClientIPHeaderTakesPrecedence(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GET /ip failed: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != 200 {
 		t.Fatalf("expected 200, got %d", resp.StatusCode)
 	}
