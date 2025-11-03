@@ -8,6 +8,11 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 
 - Nothing yet.
 
+## [v0.4.2] - 2025-11-03
+
+### Changed
+- Refactored `restresponse/response_codes.go` to reduce cyclomatic complexity by replacing large `switch` statements with lookup structures. No behavior changes.
+
 ## [v0.4.1] - 2025-11-03
 
 ### Added
@@ -28,5 +33,6 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 ### Security
 - Upgraded toolchain to Go 1.25.3 (via `go` directive and `toolchain`) to address standard library vulnerabilities (GO-2025-4007, GO-2025-4008, GO-2025-4009, GO-2025-4010, GO-2025-4011, GO-2025-4013). `govulncheck` reports no vulnerabilities.
 
-[Unreleased]: https://github.com/dan-sherwin/go-rest-api-server/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/dan-sherwin/go-rest-api-server/compare/v0.4.2...HEAD
+[v0.4.2]: https://github.com/dan-sherwin/go-rest-api-server/releases/tag/v0.4.2
 [v0.4.1]: https://github.com/dan-sherwin/go-rest-api-server/releases/tag/v0.4.1

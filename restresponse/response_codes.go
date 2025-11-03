@@ -79,114 +79,72 @@ const (
 	UnprocessableContent
 )
 
+var httpStatusFromCode = map[Code]int{
+	OK:                   http.StatusOK,
+	OkNoContent:          http.StatusNoContent,
+	Canceled:             499,
+	Unknown:              http.StatusInternalServerError,
+	InvalidArgument:      http.StatusBadRequest,
+	DeadlineExceeded:     http.StatusGatewayTimeout,
+	NotFound:             http.StatusNotFound,
+	AlreadyExists:        http.StatusConflict,
+	PermissionDenied:     http.StatusForbidden,
+	Unauthenticated:      http.StatusUnauthorized,
+	ResourceExhausted:    http.StatusTooManyRequests,
+	FailedPrecondition:   http.StatusBadRequest, // intentionally not HTTP 412
+	Aborted:              http.StatusConflict,
+	OutOfRange:           http.StatusBadRequest,
+	Unimplemented:        http.StatusNotImplemented,
+	Internal:             http.StatusInternalServerError,
+	Unavailable:          http.StatusServiceUnavailable,
+	DataLoss:             http.StatusInternalServerError,
+	BadRequest:           http.StatusBadRequest,
+	UnsupportedMediaType: http.StatusUnsupportedMediaType,
+	NotAcceptable:        http.StatusNotAcceptable,
+	PayloadTooLarge:      http.StatusRequestEntityTooLarge,
+	TooManyRequests:      http.StatusTooManyRequests,
+	UnprocessableContent: http.StatusUnprocessableEntity,
+}
+
+var codeNames = []string{
+	"OK",
+	"OKNoContent",
+	"Canceled",
+	"Unknown",
+	"InvalidArgument",
+	"DeadlineExceeded",
+	"NotFound",
+	"AlreadyExists",
+	"PermissionDenied",
+	"ResourceExhausted",
+	"FailedPrecondition",
+	"Aborted",
+	"OutOfRange",
+	"Unimplemented",
+	"Internal",
+	"Unavailable",
+	"DataLoss",
+	"Unauthenticated",
+	"BadRequest",
+	"UnsupportedMediaType",
+	"NotAcceptable",
+	"PayloadTooLarge",
+	"TooManyRequests",
+	"UnprocessableContent",
+}
+
 // HTTPStatusFromCode converts a package Code into the corresponding HTTP status code.
 func HTTPStatusFromCode(code Code) int {
-	switch code {
-	case OK:
-		return http.StatusOK
-	case OkNoContent:
-		return http.StatusNoContent
-	case Canceled:
-		return 499
-	case Unknown:
-		return http.StatusInternalServerError
-	case InvalidArgument:
-		return http.StatusBadRequest
-	case DeadlineExceeded:
-		return http.StatusGatewayTimeout
-	case NotFound:
-		return http.StatusNotFound
-	case AlreadyExists:
-		return http.StatusConflict
-	case PermissionDenied:
-		return http.StatusForbidden
-	case Unauthenticated:
-		return http.StatusUnauthorized
-	case ResourceExhausted:
-		return http.StatusTooManyRequests
-	case FailedPrecondition:
-		// Note, this deliberately doesn't translate to the similarly named '412 Precondition Failed' HTTP response status.
-		return http.StatusBadRequest
-	case Aborted:
-		return http.StatusConflict
-	case OutOfRange:
-		return http.StatusBadRequest
-	case Unimplemented:
-		return http.StatusNotImplemented
-	case Internal:
-		return http.StatusInternalServerError
-	case Unavailable:
-		return http.StatusServiceUnavailable
-	case DataLoss:
-		return http.StatusInternalServerError
-	case BadRequest:
-		return http.StatusBadRequest
-	case UnsupportedMediaType:
-		return http.StatusUnsupportedMediaType
-	case NotAcceptable:
-		return http.StatusNotAcceptable
-	case PayloadTooLarge:
-		return http.StatusRequestEntityTooLarge
-	case TooManyRequests:
-		return http.StatusTooManyRequests
-	case UnprocessableContent:
-		return http.StatusUnprocessableEntity
-	default:
-		return http.StatusInternalServerError
+	if s, ok := httpStatusFromCode[code]; ok {
+		return s
 	}
+	return http.StatusInternalServerError
 }
 
 func (c Code) String() string {
-	switch c {
-	case OK:
-		return "OK"
-	case OkNoContent:
-		return "OKNoContent"
-	case Canceled:
-		return "Canceled"
-	case Unknown:
-		return "Unknown"
-	case InvalidArgument:
-		return "InvalidArgument"
-	case DeadlineExceeded:
-		return "DeadlineExceeded"
-	case NotFound:
-		return "NotFound"
-	case AlreadyExists:
-		return "AlreadyExists"
-	case PermissionDenied:
-		return "PermissionDenied"
-	case ResourceExhausted:
-		return "ResourceExhausted"
-	case FailedPrecondition:
-		return "FailedPrecondition"
-	case Aborted:
-		return "Aborted"
-	case OutOfRange:
-		return "OutOfRange"
-	case Unimplemented:
-		return "Unimplemented"
-	case Internal:
-		return "Internal"
-	case Unavailable:
-		return "Unavailable"
-	case DataLoss:
-		return "DataLoss"
-	case Unauthenticated:
-		return "Unauthenticated"
-	case BadRequest:
-		return "BadRequest"
-	case UnsupportedMediaType:
-		return "UnsupportedMediaType"
-	case NotAcceptable:
-		return "NotAcceptable"
-	case PayloadTooLarge:
-		return "PayloadTooLarge"
-	case TooManyRequests:
-		return "TooManyRequests"
-	case UnprocessableContent:
-		return "UnprocessableContent"
-	default:
-		return "Code(" + strconv.FormatInt(int64(c), 10) + ")"
+	i := int(c)
+	if i >= 0 && i < len(codeNames) {
+		return codeNames[i]
 	}
+	return "Code(" + strconv.FormatInt(int64(c), 10) + ")"
 }
