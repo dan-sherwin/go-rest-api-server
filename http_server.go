@@ -234,16 +234,12 @@ func RegisterRouters(registrars ...func(r *gin.Engine)) {
 	}
 }
 
-// ShutdownHttpServer gracefully shuts down all running HTTP servers.
+// shutdownServersWithPolicy shuts down the provided servers using the given policy.
+// If timeout <= 0, it performs a graceful shutdown with no deadline (may wait indefinitely).
+// If timeout > 0, it waits up to the timeout for graceful shutdown; if that times out and force is true,
+// it calls Close() to forcefully terminate remaining connections.
 // Returns the first error encountered (if any).
-//
-//revive:disable-next-line var-naming
-func ShutdownHttpServer() error {
-	servers := httpServers
-	// Backward compatibility: if slice is empty but legacy handle exists, use it
-	if len(servers) == 0 && httpServer != nil {
-		servers = []*http.Server{httpServer}
-	}
+func shutdownServersWithPolicy(servers []*http.Server, timeout time.Duration, force bool) error {
 	if len(servers) == 0 {
 		return nil
 	}
@@ -251,6 +247,7 @@ func ShutdownHttpServer() error {
 	var wg sync.WaitGroup
 	var firstErr error
 	var mu sync.Mutex
+
 	for _, s := range servers {
 		if s == nil {
 			continue
@@ -258,7 +255,28 @@ func ShutdownHttpServer() error {
 		wg.Add(1)
 		go func(srv *http.Server) {
 			defer wg.Done()
-			if err := srv.Shutdown(context.Background()); err != nil {
+
+			var err error
+			if timeout > 0 {
+				ctx, cancel := context.WithTimeout(context.Background(), timeout)
+				defer cancel()
+				err = srv.Shutdown(ctx)
+				// If the shutdown exceeded the timeout and we want to force, close the server.
+				if err == context.DeadlineExceeded && force {
+					if cerr := srv.Close(); cerr != nil {
+						mu.Lock()
+						if firstErr == nil {
+							firstErr = cerr
+						}
+						mu.Unlock()
+					}
+				}
+			} else {
+				// indefinite graceful shutdown
+				err = srv.Shutdown(context.Background())
+			}
+
+			if err != nil && err != context.Canceled {
 				mu.Lock()
 				if firstErr == nil {
 					firstErr = err
@@ -269,6 +287,20 @@ func ShutdownHttpServer() error {
 	}
 	wg.Wait()
 	return firstErr
+}
+
+// ShutdownHttpServer gracefully shuts down all running HTTP servers.
+// Returns the first error encountered (if any).
+//
+//revive:disable-next-line var-naming
+func ShutdownHttpServer() error {
+	servers := httpServers
+	// Backward compatibility: if slice is empty but legacy handle exists, use it
+	if len(servers) == 0 && httpServer != nil {
+		servers = []*http.Server{httpServer}
+	}
+	// Indefinite graceful shutdown for backward compatibility
+	return shutdownServersWithPolicy(servers, 0, false)
 }
 
 // setupRoutes defines HTTP routes and their corresponding handlers for the application.
@@ -306,29 +338,42 @@ func ShutdownHttpsServer() error {
 	if len(servers) == 0 && httpsServer != nil {
 		servers = []*http.Server{httpsServer}
 	}
-	var firstErr error
-	if len(servers) > 0 {
-		var wg sync.WaitGroup
-		var mu sync.Mutex
-		for _, s := range servers {
-			if s == nil {
-				continue
-			}
-			wg.Add(1)
-			go func(srv *http.Server) {
-				defer wg.Done()
-				if err := srv.Shutdown(context.Background()); err != nil {
-					mu.Lock()
-					if firstErr == nil {
-						firstErr = err
-					}
-					mu.Unlock()
-				}
-			}(s)
-		}
-		wg.Wait()
-	}
+	// Indefinite graceful shutdown for backward compatibility
+	firstErr := shutdownServersWithPolicy(servers, 0, false)
 	// attempt cleanup regardless of shutdown success
+	cleanupGeneratedTLSFiles()
+	return firstErr
+}
+
+// ShutdownHttpServerWithTimeout attempts to gracefully shut down all running HTTP servers.
+// If timeout <= 0, it waits indefinitely for a graceful shutdown (same as ShutdownHttpServer).
+// If timeout > 0 and the graceful shutdown does not complete within the timeout and force is true,
+// it will forcefully close remaining connections.
+// Returns the first error encountered (if any).
+//
+//revive:disable-next-line var-naming
+func ShutdownHttpServerWithTimeout(timeout time.Duration, force bool) error {
+	servers := httpServers
+	if len(servers) == 0 && httpServer != nil {
+		servers = []*http.Server{httpServer}
+	}
+	return shutdownServersWithPolicy(servers, timeout, force)
+}
+
+// ShutdownHttpsServerWithTimeout attempts to gracefully shut down all running HTTPS servers.
+// If timeout <= 0, it waits indefinitely for a graceful shutdown (same as ShutdownHttpsServer).
+// If timeout > 0 and the graceful shutdown does not complete within the timeout and force is true,
+// it will forcefully close remaining connections. Any generated TLS files will be cleaned up
+// regardless of shutdown success.
+// Returns the first error encountered (if any).
+//
+//revive:disable-next-line var-naming
+func ShutdownHttpsServerWithTimeout(timeout time.Duration, force bool) error {
+	servers := httpsServers
+	if len(servers) == 0 && httpsServer != nil {
+		servers = []*http.Server{httpsServer}
+	}
+	firstErr := shutdownServersWithPolicy(servers, timeout, force)
 	cleanupGeneratedTLSFiles()
 	return firstErr
 }
