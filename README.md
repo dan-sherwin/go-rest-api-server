@@ -69,6 +69,8 @@ The package exposes a small set of globals and functions. Legacy names are prese
   - `HTTPSListeningAddress string` — default `"0.0.0.0:5556"`
   - `ListeningAddresses []string` — if non‑empty, takes precedence over `ListeningAddress`
   - `HTTPSListeningAddresses []string` — if non‑empty, takes precedence over `HTTPSListeningAddress`
+  - `LogLevel slog.Level` — specifies the level at which requests should be logged (default `LevelInfo`)
+  - `LogGetRequests bool` — determines whether or not to log GET requests (default `false`)
 - Server lifecycle
   - `StartHttpServer()` — start one or more HTTP servers
   - `StartHttpsServer(certFile, keyFile string, autoSelfSigned bool)` — start one or more HTTPS servers; when `autoSelfSigned` is true and cert/key are empty or missing, a dev self‑signed pair is generated and reused for all listeners

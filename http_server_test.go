@@ -1,11 +1,13 @@
 package restapi
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"sync"
@@ -14,6 +16,7 @@ import (
 
 	"github.com/dan-sherwin/go-rest-api-server/middlewares"
 	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
 )
 
 // test helpers
@@ -38,6 +41,9 @@ func resetState(t *testing.T) {
 	ListeningAddress = "127.0.0.1:5555"
 	HTTPSListeningAddress = "127.0.0.1:5556"
 
+	LogLevel = LevelInfo
+	LogGetRequests = false
+
 	// Enable ping by default
 	disablePing = false
 
@@ -51,7 +57,7 @@ func resetState(t *testing.T) {
 	httpApp = gin.New()
 	httpApp.Use(gin.Recovery())
 	_ = httpApp.SetTrustedProxies(nil)
-	httpApp.Use(gin.Recovery(), middlewares.CORSMiddleware(), middlewares.RequestLogger(), middlewares.NoCache())
+	httpApp.Use(gin.Recovery(), middlewares.CORSMiddleware(), middlewares.RequestLoggerWithDynamicConfig(&LogGetRequests, &LogLevel), middlewares.NoCache())
 
 	// Reset once so setupRoutes can run again
 	once = sync.Once{}
@@ -102,6 +108,34 @@ func waitForHTTPS(url string, timeout time.Duration) error {
 		time.Sleep(100 * time.Millisecond)
 	}
 	return fmt.Errorf("HTTPS not ready at %s within %s", url, timeout)
+}
+
+func TestLogLevelAndLogGetRequests(t *testing.T) {
+	resetState(t)
+
+	// Use a buffer to capture logs
+	var buf bytes.Buffer
+	handler := slog.NewJSONHandler(&buf, &slog.HandlerOptions{Level: slog.LevelDebug})
+	logger := slog.New(handler)
+	slog.SetDefault(logger)
+
+	LogLevel = LevelDebug
+	LogGetRequests = true
+	ListeningAddress = "127.0.0.1:18084"
+
+	StartHttpServer()
+	defer func() {
+		_ = ShutdownHttpServer()
+	}()
+
+	if err := waitForHTTP("http://127.0.0.1:18084/ping", 2*time.Second); err != nil {
+		t.Fatalf("Server failed to start: %v", err)
+	}
+
+	logStr := buf.String()
+	assert.Contains(t, logStr, "\"level\":\"DEBUG\"")
+	assert.Contains(t, logStr, "HTTP request")
+	assert.Contains(t, logStr, "/ping")
 }
 
 func TestHTTPServerSingleAddressPing(t *testing.T) {

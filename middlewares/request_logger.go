@@ -41,10 +41,15 @@ type RequestLoggerConfig struct {
 
 // RequestLogger is a middleware for logging details of HTTP requests using global configuration.
 func RequestLogger() gin.HandlerFunc {
+	return RequestLoggerWithDynamicConfig(&LogGetRequests, &LogLevel)
+}
+
+// RequestLoggerWithDynamicConfig is a middleware for logging details of HTTP requests with dynamic configuration.
+func RequestLoggerWithDynamicConfig(logGetRequests *bool, logLevel *slog.Level) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		RequestLoggerWithConfig(RequestLoggerConfig{
-			LogGetRequests: LogGetRequests,
-			LogLevel:       LogLevel,
+			LogGetRequests: *logGetRequests,
+			LogLevel:       *logLevel,
 		})(c)
 	}
 }
