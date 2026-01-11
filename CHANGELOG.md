@@ -6,7 +6,11 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 
 ## [Unreleased]
 
-- Nothing yet.
+### Added
+- Configurable `RequestLogger` middleware with options for log level and GET request logging.
+
+### Security
+- Upgraded toolchain to Go 1.25.5 to address standard library vulnerabilities in `crypto/x509` (GO-2025-4175, GO-2025-4155).
 
 ## [v0.4.2] - 2025-11-03
 

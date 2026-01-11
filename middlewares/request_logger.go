@@ -3,16 +3,59 @@ package middlewares
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/gin-gonic/gin"
 	"io"
 	"log/slog"
 	"net/http"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
-// RequestLogger is a middleware for logging details of HTTP requests, including method, path, status, content length, referrer, user agent, and request body if applicable, excluding GET requests. It ensures detailed request monitoring and is designed for use with the Gin framework.
+const (
+	// LevelDebug corresponds to slog.LevelDebug.
+	LevelDebug = slog.LevelDebug
+	// LevelInfo corresponds to slog.LevelInfo.
+	LevelInfo = slog.LevelInfo
+	// LevelWarn corresponds to slog.LevelWarn.
+	LevelWarn = slog.LevelWarn
+	// LevelError corresponds to slog.LevelError.
+	LevelError = slog.LevelError
+	// LevelOff is a custom level used to disable request logging.
+	LevelOff = slog.Level(100)
+)
+
+var (
+	// LogGetRequests determines whether or not to log GET requests.
+	LogGetRequests = false
+	// LogLevel specifies the level at which requests should be logged.
+	LogLevel = LevelInfo
+)
+
+// RequestLoggerConfig defines the configuration for the RequestLogger middleware.
+type RequestLoggerConfig struct {
+	// LogGetRequests determines whether or not to log GET requests.
+	LogGetRequests bool
+	// LogLevel specifies the level at which requests should be logged.
+	LogLevel slog.Level
+}
+
+// RequestLogger is a middleware for logging details of HTTP requests using global configuration.
 func RequestLogger() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		RequestLoggerWithConfig(RequestLoggerConfig{
+			LogGetRequests: LogGetRequests,
+			LogLevel:       LogLevel,
+		})(c)
+	}
+}
+
+// RequestLoggerWithConfig is a middleware for logging details of HTTP requests with custom configuration.
+func RequestLoggerWithConfig(config RequestLoggerConfig) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if config.LogLevel == LevelOff {
+			c.Next()
+			return
+		}
 		userAgent := c.Request.UserAgent()
 		referrer := c.Request.Referer()
 		method := c.Request.Method
@@ -38,8 +81,8 @@ func RequestLogger() gin.HandlerFunc {
 		}
 		c.Next()
 		status := c.Writer.Status()
-		if method != http.MethodGet {
-			slog.Info("HTTP request",
+		if method != http.MethodGet || config.LogGetRequests {
+			slog.Log(c.Request.Context(), config.LogLevel, "HTTP request",
 				slog.String("method", method),
 				slog.String("path", path),
 				slog.Int("status", status),
